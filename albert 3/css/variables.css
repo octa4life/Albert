@@ -1,0 +1,9 @@
+:root{
+  --brown:#4a0b0b; --green:#1e3806; --cream:#fff4bd; --pink:#f480bc; --blue:#5f81c6; --line:#e8dccf;
+  --font-display:"Vabedo","Fredoka",system-ui,sans-serif;
+  --font-body:"Comfortaa",system-ui,sans-serif;
+  --font-ui:"Inter",system-ui,sans-serif;
+  --pad:64px; --r-card:28px; --shadow:0 8px 24px rgba(74,11,11,.04);
+}
+@font-face{font-family:"Vabedo";src:url("../assets/fonts/Vabedo.woff2") format("woff2"),url("../assets/fonts/Vabedo.ttf") format("truetype");font-display:swap}
+@media(max-width:900px){:root{--pad:24px}}
