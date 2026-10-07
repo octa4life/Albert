@@ -1,1 +1,0 @@
-Placez ici Vabedo.woff2 (ou Vabedo.ttf). Sans ce fichier, la police Fredoka (Google Fonts) est utilisée.

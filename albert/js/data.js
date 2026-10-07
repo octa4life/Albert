@@ -84,3 +84,77 @@ window.ALBERT = {
     colette:[["Sachet 150 g",15],["Sachet 300 g",25]], lucien:[["Sachet 150 g",13.5],["Sachet 300 g",22]] };
   ALBERT.products.forEach(p => p.variants = V[p.slug]);
 })();
+
+/* =====================================================================
+   FICHES PRODUIT — contenu éditable (réglages, chiffres, FAQ, avis)
+   ===================================================================== */
+(function () {
+  const D = window.ALBERT;
+  const fmt = (n) => n.toFixed(2).replace(".", ",") + " €";
+
+  /* Ligne livraison (à adapter à ta vraie politique). [] pour la masquer. */
+  D.shipping = ["Livraison offerte", "à partir de 45 €"];
+
+  /* AVIS CLIENTS — vides par défaut (rien d'inventé).
+     Pour en ajouter : { name:"Prénom N.", date:"4 oct. 2026", rating:5, verified:true, text:"…" } */
+  D.reviews = { "harnais-albert": [], gaston: [], marcel: [], colette: [], lucien: [] };
+
+  const items = (c) => c.split(" — ")[0].replace(/\.$/, "").split(/,\s*|\s+et\s+/);
+  const PILLS = {
+    "harnais-albert": ["Morphologie", "Confort", "Réparable"],
+    gaston: ["Dos", "Articulations", "Quotidien"],
+    marcel: ["Dents", "Haleine", "Plaisir"],
+    colette: ["Yeux", "Rétine", "Oméga-3"],
+    lucien: ["Léger", "Fibres", "Ligne"]
+  };
+  const REVERSE = "Pour chaque article acheté, 0,50 € sont reversés à Teckels Sans Doux Foyer, pour le sauvetage et la prise en charge des teckels abandonnés.";
+  const VET = "Votre vétérinaire connaît l’histoire et l’état de santé de votre teckel : demandez-lui conseil. Nos produits ne constituent pas un traitement.";
+
+  D.products.forEach((p) => {
+    p.pills = PILLS[p.slug];
+    if (p.harness) {
+      p.facts = "Polyester 100 % recyclé · Certifié OEKO-TEX · Pièces détachées";
+      p.results = [
+        ["7", "tailles disponibles, du XXS au XXL"],
+        ["3", "coloris au choix : bordeaux, vert sapin, rose"],
+        ["100 %", "polyester recyclé, certifié OEKO-TEX"]
+      ];
+      p.acc = [
+        ["Pour qui ?", "Pour les teckels : corps allongé, thorax profond, pattes courtes. Le harnais se choisit en fonction de la mesure de votre teckel, pas seulement de son apparence."],
+        ["Conseils d’ajustement", "Mesurez le tour de thorax avec un mètre souple, sans serrer, votre teckel debout et au calme. Vérifiez la mesure deux fois et consultez le <a href=\"#guide\" style=\"text-decoration:underline\">guide de mesure</a>."],
+        ["Astuces", "Avant de sortir, vérifiez l’ajustement et observez si votre teckel bouge librement. En cas de gêne, interrompez l’usage et faites vérifier l’ajustement."],
+        ["Matières & réparabilité", "Polyester 100 % recyclé, certifié OEKO-TEX. Des pièces détachées permettent de réparer plutôt que jeter."],
+        ["Santé", VET]
+      ];
+      p.faq = [
+        ["Comment choisir la taille du harnais ?", "Relevez le tour de thorax de votre teckel puis faites confirmer la correspondance avec le guide officiel. En cas de doute, contactez-nous."],
+        ["De quoi est fait le harnais Albert ?", "De polyester 100 % recyclé, certifié OEKO-TEX."],
+        ["Peut-on réparer le harnais ?", "Oui, la réparabilité fait partie de la conception : des pièces détachées permettent de prolonger la vie du produit."],
+        ["Quels sont les coloris disponibles ?", "Bordeaux, vert sapin et rose (aperçu illustratif, nuances non contractuelles)."],
+        ["À quoi servent les 0,50 € reversés ?", REVERSE]
+      ];
+    } else {
+      const act = items(p.compo), lo = p.variants[0][1], hi = p.variants[1][1];
+      p.facts = "Composition transparente · Sachet 150 g ou 300 g · 0,50 € reversés par article";
+      p.results = [
+        [String(act.length), "actifs clés dans la composition"],
+        ["2", "formats au choix : sachet 150 g ou 300 g"],
+        ["0,50 €", "reversés à Teckels Sans Doux Foyer par article"]
+      ];
+      p.acc = [
+        ["Pour qui ?", p.desc + " À choisir selon l’âge, les habitudes et l’état de santé de votre teckel."],
+        ["Conseils d’usage", "Proposez la friandise en complément de son alimentation, jamais à la place d’un repas. Respectez la quantité indiquée sur le sachet."],
+        ["Astuces", "Comptez la friandise dans la ration de la journée, surtout si votre teckel doit surveiller son poids. Refermez bien le sachet et conservez-le au sec."],
+        ["Actifs clés", "<ul style=\"padding-left:18px\">" + act.map((a) => "<li>" + a + "</li>").join("") + "</ul>"],
+        ["Composition", p.compo.replace(" — ", ". ")]
+      ];
+      p.faq = [
+        ["Quels sont les actifs de " + p.name + " ?", p.compo],
+        ["Une friandise peut-elle remplacer un repas ?", "Non. Les friandises ne remplacent ni une alimentation complète ni un avis vétérinaire."],
+        ["Quel format choisir ?", "Le sachet 150 g (" + fmt(lo) + ") pour commencer, le sachet 300 g (" + fmt(hi) + ") pour plus de volume. La composition est identique."],
+        ["Mon teckel a un souci de santé, puis-je lui en donner ?", VET],
+        ["À quoi servent les 0,50 € reversés ?", REVERSE]
+      ];
+    }
+  });
+})();

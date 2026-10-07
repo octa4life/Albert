@@ -1,0 +1,14 @@
+Images à déposer dans ce dossier (noms exacts attendus par js/main.js) :
+
+albert-logo.svg
+teckels-sans-doux-foyer.webp
+hero-teckel.webp
+teckel-repos.webp
+teckel-jardin.webp
+teckel-quotidien.webp
+produit-harnais.webp
+produit-gaston.webp
+produit-marcel.webp
+produit-colette.webp
+produit-lucien.webp
+favicon.svg

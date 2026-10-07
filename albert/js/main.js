@@ -182,19 +182,35 @@
     const gal = p.harness ? [["harnais","Harnais porté"],["jardin","En balade"]] : [[p.img,"Le sachet"],["hero","Pour les gourmands"],["repos","Au repos"]];
     mount("crumbs", `<a href="${ROOT}index.html">Boutique</a> / ${p.harness ? "Accessoires" : "Friandises"} / ${p.name}`);
     carousel(document.getElementById("gallery"), gal.map(g => g[0]), true, gal.map(g => g[1]));
+    document.getElementById("info").classList.add("pcard");
     let vi = p.harness ? -1 : 0, color = "Bordeaux";
     const colors = [["Bordeaux", "#4a0b0b"], ["Vert sapin", "#1e3806"], ["Rose", "#f480bc"]];
-    const compo = !p.harness ? `<section class="compo" aria-labelledby="compo-t"><h2 id="compo-t">Composition</h2><ul>${p.compo.split(" — ")[0].replace(/\.$/, "").split(/,\s*|\s+et\s+/).map(i => `<li>${i}</li>`).join("")}</ul>${p.compo.includes(" — ") ? `<p class="compo-note">${p.compo.split(" — ")[1].replace(/\.$/, "")}</p>` : ""}</section>` : "";
-    mount("info", `<p class="eyebrow">${p.type} · ${p.need}</p><h1>${p.name}</h1><p class="sub">${p.tagline}</p><p>${p.desc}</p>
-      <p class="price" id="price" aria-live="polite"></p>
+
+    /* avis (D.reviews, vide par défaut) */
+    const rv = (D.reviews && D.reviews[p.slug]) || [];
+    const avg = rv.length ? rv.reduce((a, r) => a + r.rating, 0) / rv.length : 0;
+    const stars = (n) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
+    const avgTxt = avg.toFixed(1).replace(".", ",");
+    const rate = rv.length ? `<a class="rate" href="#avis" aria-label="Note moyenne ${avgTxt} sur 5, ${rv.length} avis"><span class="stars" aria-hidden="true">${stars(avg)}</span><span aria-hidden="true">${avgTxt}/5 · <u>${rv.length} avis</u></span></a>` : "";
+    const ship = (D.shipping && D.shipping.length) ? `<p class="ship"><strong>${D.shipping[0]}</strong><span>${D.shipping[1] || ""}</span></p>` : "";
+
+    mount("info", `${rate}<h1>${p.name}</h1><p class="sub">${p.tagline}</p>
+      <ul class="pchips" aria-label="Points clés">${p.pills.map(x => `<li>${x}</li>`).join("")}</ul>
+      <p class="pdesc">${p.desc}</p>
+      <p class="facts">${p.facts}</p>
       <div role="radiogroup" aria-labelledby="l-var" class="opts"><p id="l-var">${p.harness ? "Taille" : "Format"}</p><div class="opt-row">${p.variants.map((v, i) => `<button type="button" class="opt" role="radio" aria-checked="false" data-i="${i}">${v[0]}${p.harness ? "" : " · " + fmt(v[1])}</button>`).join("")}</div>${p.harness ? `<p class="note">Tailles et correspondances officielles à confirmer. <a href="#guide" style="text-decoration:underline">Voir le guide de mesure</a></p>` : ""}</div>
-      ${p.harness ? `<div role="radiogroup" aria-labelledby="l-col" class="opts"><p id="l-col">Couleur · aperçu illustratif</p><div class="swatches">${colors.map(([n, c], i) => `<button type="button" class="sw${i ? "" : " on"}" role="radio" aria-checked="${i === 0}" aria-label="${n}" data-c="${n}" style="background:${c}"></button>`).join("")}</div><p class="note">Nuances de maquette, non contractuelles.</p></div>` : compo}
-      <div class="actions"><button type="button" class="btn${p.blue ? " blue" : ""}" id="add">Ajouter au panier ${I.bag}</button><button type="button" class="btn light" data-fav="${p.slug}" aria-pressed="false">${I.heart}<span class="t">Ajouter aux favoris</span></button></div>
+      ${p.harness ? `<div role="radiogroup" aria-labelledby="l-col" class="opts"><p id="l-col">Couleur · aperçu illustratif</p><div class="swatches">${colors.map(([n, c], i) => `<button type="button" class="sw${i ? "" : " on"}" role="radio" aria-checked="${i === 0}" aria-label="${n}" data-c="${n}" style="background:${c}"></button>`).join("")}</div><p class="note">Nuances de maquette, non contractuelles.</p></div>` : ""}
+      <p class="sr-only" id="price" aria-live="polite"></p>
+      <button type="button" class="btn buy${p.blue ? " blue" : ""}" id="add"><span id="addlbl"></span>${I.bag}</button>
+      <button type="button" class="btn light" data-fav="${p.slug}" aria-pressed="false">${I.heart}<span class="t">Ajouter aux favoris</span></button>
       <p class="msg" id="msg" role="status"></p>
+      ${ship}
       <div class="gift">${img("asso", "Logo Teckels Sans Doux Foyer")}<p><strong>0,50 € reversés à Teckels Sans Doux Foyer</strong> pour chaque article acheté, pour aider les teckels abandonnés.</p></div>
       ${p.harness ? "" : `<p class="note">Une friandise ne remplace ni une alimentation complète ni un avis vétérinaire.</p>`}`);
-    const priceEl = document.getElementById("price"), msg = document.getElementById("msg"), opts = document.querySelectorAll(".opt");
-    const upd = () => { priceEl.textContent = fmt(p.variants[Math.max(vi, 0)][1]); opts.forEach((b, i) => { b.setAttribute("aria-checked", i === vi); b.classList.toggle("on", i === vi); }); };
+
+    const priceEl = document.getElementById("price"), addLbl = document.getElementById("addlbl"), msg = document.getElementById("msg"), opts = document.querySelectorAll(".opt");
+    const upd = () => { const pr = p.variants[Math.max(vi, 0)][1]; priceEl.textContent = fmt(pr); addLbl.textContent = `Ajouter au panier – ${fmt(pr)}`;
+      opts.forEach((b, i) => { b.setAttribute("aria-checked", i === vi); b.classList.toggle("on", i === vi); }); };
     opts.forEach((b, i) => b.addEventListener("click", () => { vi = i; msg.textContent = ""; upd(); }));
     document.querySelectorAll(".sw").forEach(b => b.addEventListener("click", () => { color = b.dataset.c; document.querySelectorAll(".sw").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-checked", x === b); }); }));
     document.getElementById("add").addEventListener("click", () => {
@@ -202,16 +218,32 @@
       addCart(p.slug, p.variants[vi][0], p.variants[vi][1], p.harness ? color : ""); msg.textContent = "Ajouté au panier ✓";
     });
     upd();
-    if (p.harness) {
-      mount("extra", `<section class="section dark"><p class="eyebrow">Sa morphologie d’abord</p><h2>Un teckel n’est pas un chien comme les autres.</h2><div class="grid g3">
+
+    /* ----- sections sous la fiche : chiffres / expertise + FAQ / avis ----- */
+    const acc = (arr) => arr.map(([t, b]) => `<details class="acc"><summary>${t}</summary><div>${b}</div></details>`).join("");
+    const results = `<section class="section" aria-labelledby="res-t" style="padding-bottom:0"><div class="pbox"><h2 class="caps" id="res-t">L’essentiel en chiffres</h2>
+      <dl class="results">${p.results.map(([v, l]) => `<div><dt>${v}</dt><dd>${l}</dd></div>`).join("")}</dl></div></section>`;
+    const expert = `<section class="section" style="padding-bottom:0"><div class="grid g2 pgrid">
+      <div class="pbox"><div class="stamp-wrap"><div class="stamp" aria-hidden="true">A</div><p>Conçu avec l’aide de vétérinaires, sans jamais les remplacer</p></div>${acc(p.acc)}</div>
+      <div class="pbox faqbox"><h2 class="caps">FAQ</h2>${acc(p.faq)}</div></div></section>`;
+    const revItem = (r, i) => `<article class="rev"${i > 2 ? " hidden data-more" : ""}><div class="who"><span>${r.name}</span>${r.verified ? `<span class="ok">✓ acheteur vérifié</span>` : ""}</div>
+      <div><div class="top"><span class="stars" aria-label="${r.rating} sur 5">${stars(r.rating)}</span><span>${r.date || ""}</span></div><p>${r.text}</p></div></article>`;
+    const reviews = `<section class="section" id="avis" aria-labelledby="rev-t"><div class="pbox">
+      <p class="rating-big">${rv.length ? avgTxt + " / 5" : "Avis clients"}</p>
+      <h2 class="caps" id="rev-t">${rv.length ? "Basé sur " + rv.length + " avis" : "Aucun avis pour le moment"}</h2>
+      ${rv.length ? `<div class="rev-list">${rv.map(revItem).join("")}${rv.length > 3 ? `<button type="button" class="rev-more">Afficher plus</button>` : ""}</div>` : `<p class="note" style="margin-top:12px">Soyez le premier à partager votre expérience avec ${p.name}.</p>`}</div></section>`;
+
+    const harnessExtra = p.harness ? `<section class="section dark"><p class="eyebrow">Sa morphologie d’abord</p><h2>Un teckel n’est pas un chien comme les autres.</h2><div class="grid g3">
         ${[["Une silhouette unique","Un corps allongé, des pattes courtes : sa morphologie guide notre démarche de conception."],["Un choix individuel","L’ajustement doit tenir compte de votre teckel. Sa mesure et son confort passent avant l’aspect du harnais."],["Une démarche accompagnée","Albert conçoit des produits spécifiques à leurs besoins avec l’aide de vétérinaires."]].map(([t, d]) => `<div class="panel g"><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
         <p class="small-print">Les matériaux, réglages et caractéristiques techniques seront précisés dans la fiche officielle. Aucun effet médical n’est revendiqué.</p></section>
         <section class="section" id="guide"><div class="split"><div class="stack"><p class="eyebrow">Avant de choisir</p><h2>Mesurer, puis trouver le bon ajustement.</h2></div><p>Préparez un mètre souple et installez votre teckel debout, au calme. Ces repères vous aident à préparer votre choix ; ils ne constituent pas un tableau de tailles officiel.</p></div>
         <div class="grid g3">${[["01","Observer","Repérez le thorax derrière les pattes avant, sans forcer votre teckel à prendre une posture inhabituelle."],["02","Relever","Faites le tour du thorax avec le mètre souple, sans serrer. Notez la mesure et vérifiez-la une seconde fois."],["03","Faire confirmer","Conservez vos mesures pour les comparer au guide officiel lorsqu’il sera disponible. En cas de doute, contactez-nous."]].map(([n, t, d]) => `<div class="panel w"><span class="num">${n}</span><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>
         <div class="banner"><p>Pas de taille choisie au hasard. Faisons le point ensemble.</p><a class="btn light" href="mailto:contact@albert.fr">Demander conseil ${I.play}</a></div></section>
         <section class="section green"><div class="split"><div class="stack"><p class="eyebrow">Au quotidien</p><h2>Une balade, un rythme.</h2></div><div class="stack">
-        <p>Avant de sortir, vérifiez l’ajustement et observez si votre teckel bouge librement.</p><p>Pendant la promenade, restez attentif à son confort. En cas de gêne, interrompez l’usage et faites vérifier l’ajustement.</p><p>En cas de douleur, de difficulté à se déplacer ou de problème de santé, demandez l’avis de votre vétérinaire.</p></div></div></section>`);
-    }
+        <p>Avant de sortir, vérifiez l’ajustement et observez si votre teckel bouge librement.</p><p>Pendant la promenade, restez attentif à son confort. En cas de gêne, interrompez l’usage et faites vérifier l’ajustement.</p><p>En cas de douleur, de difficulté à se déplacer ou de problème de santé, demandez l’avis de votre vétérinaire.</p></div></div></section>` : "";
+    mount("extra", results + expert + reviews + harnessExtra);
+    const more = document.querySelector(".rev-more");
+    if (more) more.addEventListener("click", () => { document.querySelectorAll("[data-more]").forEach(x => x.hidden = false); more.remove(); });
     mount("others", others(p).map(x => card(x, false)).join(""));
   }
 
